@@ -7,3 +7,5 @@ C:\Post\Post\bin\Debug\Post.pdb
 C:\Post\Post\obj\Debug\Post.exe
 C:\Post\Post\obj\Debug\Post.pdb
 C:\Post\Post\obj\Debug\Post.csprojResolveAssemblyReference.cache
+C:\Post\Post\bin\Debug\Newtonsoft.Json.dll
+C:\Post\Post\bin\Debug\Newtonsoft.Json.xml

@@ -9,6 +9,7 @@ using System.Threading.Tasks;
 using System.Globalization;
 using System.Windows.Forms;
 using System.IO;
+using System.Web.Script.Serialization;
 
 namespace Post
 {
@@ -21,6 +22,9 @@ namespace Post
             label1.Text = "";
             label2.Text = "";
             label3.Text = "";
+            label5.Text = "";
+            label6.Text = "";
+            label7.Text = "";
         }
 
         private void BtnBrowse_Click(object sender, EventArgs e)
@@ -28,6 +32,9 @@ namespace Post
             label1.Text = "";
             label2.Text = "";
             label3.Text = "";
+            label5.Text = "";
+            label6.Text = "";
+            label7.Text = "";
 
             //Open a dialog to select a csv file
             if (openFileDialog1.ShowDialog() == DialogResult.OK)
@@ -38,9 +45,18 @@ namespace Post
         {
             string strFileName = TbUploadFile.Text;
             bool isDetailedMode = cbDetailedMode.Checked;
+            bool isCSV = cbCSV.Checked;
+            bool isJSON = cbJSON.Checked;
+
+            if (!isCSV && !isJSON)
+            {
+                MessageBox.Show("Select a file type.");
+                return;
+            }
+
             FileFormat(strFileName);
 
-            FileProcess(@"C:\temp.csv", isDetailedMode);
+            FileProcess(@"C:\temp.csv", isDetailedMode, isCSV, isJSON);
         }
 
         //Add a new timestamp_new column, sort by timestamp_new and likes
@@ -111,7 +127,7 @@ namespace Post
         }
 
         //Create the output files
-        private void FileProcess(string filepath, bool isDetailedMode)
+        private void FileProcess(string filepath, bool isDetailedMode, bool isCSV, bool isJSON)
         {
             try
             {
@@ -131,6 +147,9 @@ namespace Post
                     int len = 0;
                     int j = 0;
                     var line_new = "";
+                    List<Post> list_top_posts = new List<Post> { };
+                    List<Post> list_other_posts = new List<Post> { };
+                    List<Post> list_daily_top_posts = new List<Post> { };
 
                     StringBuilder builder_top_posts = new StringBuilder();
                     StringBuilder builder_other_posts = new StringBuilder();
@@ -177,22 +196,62 @@ namespace Post
                             timestamp_new = values[len - 1].ToString();
 
                             line_new = id;
+
                             if (isDetailedMode)
                                 line_new += "," + title + "," + privacy + "," + likes + "," + views + "," + comments + "," + timestamp;
 
-
                             if (isTopPosts(privacy, comments, views, title))
                             {
-                                builder_top_posts.AppendLine(line_new); //put top posts to builder_top_posts
+                                //For csv format
+                                if (isCSV)
+                                {
+                                    builder_top_posts.AppendLine(line_new); //put top posts to builder_top_posts
+                                }
+
+                                //For JSON format
+                                if (isJSON)
+                                {
+                                    if (isDetailedMode)
+                                        list_top_posts.Add(new Post { id = id, privacy = privacy, likes = likes, views = views, comments = comments, timestamp = timestamp });
+                                    else
+                                        list_top_posts.Add(new Post { id = id });
+                                }
                             }
                             else
                             {
-                                builder_other_posts.AppendLine(line_new); //put remaining posts to builder_other_posts
+                                //For csv format
+                                if (isCSV)
+                                {
+                                    builder_other_posts.AppendLine(line_new); //put remaining posts to builder_other_posts
+                                }
+
+                                //For JSON format
+                                if (isJSON)
+                                {
+                                    if (isDetailedMode)
+                                        list_other_posts.Add(new Post { id = id, privacy = privacy, likes = likes, views = views, comments = comments, timestamp = timestamp });
+                                    else
+                                        list_other_posts.Add(new Post { id = id });
+                                }
                             }
 
                             if (timestamp_new != timestamp_new_temp) //Since the temp.csv file ordered by date and the 'likes' (descending), so the top row must be one of the top posts for the new day
                             {
-                                builder_daily_top_posts.AppendLine(line_new); //put daily top posts to builder_daily_top_posts
+                                //For csv format
+                                if (isCSV)
+                                {
+                                    builder_daily_top_posts.AppendLine(line_new); //put daily top posts to builder_daily_top_posts
+                                }
+
+                                //For JSON format
+                                if (isJSON)
+                                {
+                                    if (isDetailedMode)
+                                        list_daily_top_posts.Add(new Post { id = id, privacy = privacy, likes = likes, views = views, comments = comments, timestamp = timestamp });
+                                    else
+                                        list_daily_top_posts.Add(new Post { id = id });
+                                }
+
                                 likes_highest = likes;
                             }
                             else if (likes == likes_highest)
@@ -205,13 +264,27 @@ namespace Post
                     }
 
                     //Create output files
-                    WriteToCVS(@"C:\posts_top_posts.csv", builder_top_posts.ToString());
-                    WriteToCVS(@"C:\posts_other_posts.csv", builder_other_posts.ToString());
-                    WriteToCVS(@"C:\posts_daily_posts.csv", builder_daily_top_posts.ToString());
+                    if (isCSV)
+                    {
+                        WriteToCVS(@"C:\posts_top_posts.csv", builder_top_posts.ToString());
+                        WriteToCVS(@"C:\posts_other_posts.csv", builder_other_posts.ToString());
+                        WriteToCVS(@"C:\posts_daily_top_posts.csv", builder_daily_top_posts.ToString());
 
-                    label1.Text = "posts_top_posts.csv is created under C drive.";
-                    label2.Text = "posts_other_posts.csv is created under C drive.";
-                    label3.Text = "posts_daily_posts.csv is created under C drive.";
+                        label1.Text = "posts_top_posts.csv is created under C drive.";
+                        label2.Text = "posts_other_posts.csv is created under C drive.";
+                        label3.Text = "posts_daily_top_posts.csv is created under C drive.";
+                    }
+
+                    if (isJSON)
+                    {
+                        WriteToCVS(@"C:\posts_top_posts.json", list_top_posts.ToJSON());
+                        WriteToCVS(@"C:\posts_other_posts.json", list_other_posts.ToJSON());
+                        WriteToCVS(@"C:\posts_daily_top_posts.json", list_daily_top_posts.ToJSON());
+
+                        label5.Text = "posts_top_posts.json is created under C drive.";
+                        label6.Text = "posts_other_posts.json is created under C drive.";
+                        label7.Text = "posts_daily_top_posts.json is created under C drive.";
+                    }
                 }
 
                 //Delete the temp.csv if exists
@@ -244,6 +317,51 @@ namespace Post
             label1.Text = "";
             label2.Text = "";
             label3.Text = "";
+            label5.Text = "";
+            label6.Text = "";
+            label7.Text = "";
+        }
+
+        private void cbCSV_CheckedChanged(object sender, EventArgs e)
+        {
+            label1.Text = "";
+            label2.Text = "";
+            label3.Text = "";
+            label5.Text = "";
+            label6.Text = "";
+            label7.Text = "";
+        }
+
+        private void cbJSON_CheckedChanged(object sender, EventArgs e)
+        {
+            label1.Text = "";
+            label2.Text = "";
+            label3.Text = "";
+            label5.Text = "";
+            label6.Text = "";
+            label7.Text = "";
         }
     }
+
+    public class Post
+    {
+        public string id { get; set; }
+        public string title { get; set; }
+        public string privacy { get; set; }
+        public int likes { get; set; }
+        public int views { get; set; }
+        public int comments { get; set; }
+        public string timestamp { get; set; }
+    }
+
+
+    public static class JSONHelper
+    {
+        public static string ToJSON(this object obj)
+        {
+            JavaScriptSerializer serializer = new JavaScriptSerializer();
+            return serializer.Serialize(obj);
+        }
+    }
+
 }
