@@ -235,7 +235,7 @@ namespace Post
                                 }
                             }
 
-                            if (timestamp_new != timestamp_new_temp) //Since the temp.csv file ordered by date and the 'likes' (descending), so the top row must be one of the top posts for the new day
+                            if (timestamp_new != timestamp_new_temp && isTopPosts(privacy, comments, views, title)) //Since the temp.csv file ordered by date and the 'likes' (descending), so the top row must be one of the top posts for the new day
                             {
                                 //For csv format
                                 if (isCSV)
@@ -254,10 +254,26 @@ namespace Post
 
                                 likes_highest = likes;
                             }
-                            else if (likes == likes_highest)
-                                builder_daily_top_posts.AppendLine(line_new); //if found a post with the same 'likes', put daily the posts to builder_daily_top_posts
+                            else if (likes == likes_highest && isTopPosts(privacy, comments, views, title))
+                            {
+                                // For csv format
+                                if (isCSV)
+                                {
+                                    builder_daily_top_posts.AppendLine(line_new); //if found a post with the same 'likes', put daily the posts to builder_daily_top_posts
+                                }
 
-                            timestamp_new_temp = timestamp_new;
+                                //For JSON format
+                                if (isJSON)
+                                {
+                                    if (isDetailedMode)
+                                        list_daily_top_posts.Add(new Post { id = id, privacy = privacy, likes = likes, views = views, comments = comments, timestamp = timestamp });
+                                    else
+                                        list_daily_top_posts.Add(new Post { id = id });
+                                }
+                            }
+
+                            if (isTopPosts(privacy, comments, views, title))
+                                timestamp_new_temp = timestamp_new;
                         }
 
                         j++;
