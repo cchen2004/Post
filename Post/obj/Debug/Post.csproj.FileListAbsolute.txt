@@ -1,0 +1,9 @@
+C:\Post\Post\bin\Debug\Post.exe.config
+C:\Post\Post\obj\Debug\Post.Form1.resources
+C:\Post\Post\obj\Debug\Post.Properties.Resources.resources
+C:\Post\Post\obj\Debug\Post.csproj.GenerateResource.Cache
+C:\Post\Post\bin\Debug\Post.exe
+C:\Post\Post\bin\Debug\Post.pdb
+C:\Post\Post\obj\Debug\Post.exe
+C:\Post\Post\obj\Debug\Post.pdb
+C:\Post\Post\obj\Debug\Post.csprojResolveAssemblyReference.cache

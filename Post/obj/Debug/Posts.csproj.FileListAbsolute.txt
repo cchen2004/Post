@@ -1,0 +1,6 @@
+C:\Posts\Post\bin\Debug\Post.exe.config
+C:\Posts\Post\obj\Debug\Post.exe
+C:\Posts\Post\obj\Debug\Post.pdb
+C:\Post\Post\bin\Debug\Post.exe.config
+C:\Post\Post\obj\Debug\Post.exe
+C:\Post\Post\obj\Debug\Post.pdb
